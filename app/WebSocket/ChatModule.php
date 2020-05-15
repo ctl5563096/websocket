@@ -11,53 +11,74 @@
 namespace App\WebSocket;
 
 use App\WebSocket\Chat\HomeController;
+use \Swoft\Redis\Redis;
 use Swoft\Http\Message\Request;
-use Swoft\Session\Session;
+use Swoft\WebSocket\Server\Annotation\Mapping\OnClose;
+use Swoft\WebSocket\Server\Annotation\Mapping\OnMessage;
 use Swoft\WebSocket\Server\Annotation\Mapping\OnOpen;
 use Swoft\WebSocket\Server\Annotation\Mapping\WsModule;
 use Swoft\WebSocket\Server\MessageParser\JsonParser;
-use function basename;
+use Swoole\WebSocket\Frame;
+use Swoole\WebSocket\Server;
 use function server;
 
 /**
  * Class ChatModule
  *
  * @WsModule(
- *     "/chat",
+ *     "/Chat",
  *     messageParser=JsonParser::class,
- *     controllers={HomeController::class}
+ *     controllers={
+ *     HomeController::class
+ *     }
  * )
  */
 class ChatModule
 {
     /**
+     * 连接成功回调方法
+     *
      * @OnOpen()
      * @param Request $request
-     * @param int     $fd
      */
-    public function onOpen(Request $request, int $fd): void
+    public function onOpen(Request $request): void
     {
-        server()->push($request->getFd(), "Opened, welcome!(FD: $fd)");
+        // 把fd存储到哈希里面
+        Redis::hSet('weChat_id','info' . $request->getFd(),$name = '游客'.time());
+        $name = '游客'.time();
+        // 返回客户端fd给客户端,用于处理聊天室问题
+        server()->push($request->getFd(),"{$name}欢迎来到聊天室");
+    }
 
-        $fullClass = Session::current()->getParserClass();
-        $className = basename($fullClass);
+    /**
+     * Date: 2020/5/15
+     * @param Frame $frame
+     * @author chentulin
+     *
+     * @OnMessage()
+     */
+    public function onMessage(Server $server ,Frame $frame): void
+    {
+        // 发送者的fd
+        $fd = $frame->fd;
+        // 发送者名称
+        $name = Redis::hGet('weChat_id','info' . $fd);
+        server()->sendToAll($name . ' : ' . $frame->data , $fd , 50);
+    }
 
-        $help = <<<TXT
-Message data parser: $className
-Send message example:
+    /**
+     * Date: 2020/5/15
+     * @param Server $server
+     * @param int $fd
+     * @author chentulin
+     *
+     * @OnClose()
+     */
+    public function onClose(Server $server, int $fd): void
+    {
+        // 断开socket时删除某个哈希键 防止哈希键过多
+        $hashKey = 'info' . $fd;
 
-```json
-{
-    "cmd": "home.index",
-    "data": "hello"
-}
-```
-
-Description:
-
-- cmd `home.index` => App\WebSocket\Chat\HomeController::index()
-TXT;
-
-        server()->push($fd, $help);
+        Redis::hDel('weChat_id',$hashKey);
     }
 }

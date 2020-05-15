@@ -107,7 +107,7 @@ return [
         'class'    => RedisDb::class,
         'host'     => '127.0.0.1',
         'port'     => 6379,
-        'database' => 0,
+        'database' => 1,
         'option'   => [
             'prefix' => 'swoft:'
         ]
@@ -138,7 +138,7 @@ return [
         'class'    => WebSocketServer::class,
         'port'     => 18308,
         'listener' => [
-            'rpc' => bean('rpcServer'),
+//            'rpc' => bean('rpcServer'),
             // 'tcp' => bean('tcpServer'),
         ],
         'on'       => [
@@ -189,5 +189,11 @@ return [
         ],
     ],
     'cliRouter'          => [// 'disabledGroups' => ['demo', 'test'],
+    ],
+    'wsConnectionManager' => [
+        'storage' => bean('wsConnectionStorage')
+    ],
+    'wsConnectionStorage' => [
+        'class' => \Swoft\Session\SwooleStorage::class,
     ],
 ];

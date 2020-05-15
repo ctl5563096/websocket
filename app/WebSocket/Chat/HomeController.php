@@ -23,49 +23,16 @@ class HomeController
 {
     /**
      * Message command is: 'home.index'
+     * 这是默认的
      *
+     * @param string $data
      * @return void
      * @MessageMapping()
      */
-    public function index(): void
+    public function index(string $data): void
     {
-        Session::current()->push('hi, this is home.index');
-    }
-
-    /**
-     * Message command is: 'home.echo'
-     *
-     * @param string $data
-     * @MessageMapping()
-     */
-    public function echo(string $data): void
-    {
-        Session::current()->push('(home.echo)Recv: ' . $data);
-    }
-
-    /**
-     * Message command is: 'home.ar'
-     *
-     * @param string $data
-     * @MessageMapping("ar")
-     *
-     * @return string
-     */
-    public function autoReply(string $data): string
-    {
-        return '(home.ar)Recv: ' . $data;
-    }
-
-    /**
-     * Message command is: 'help'
-     *
-     * @param string $data
-     * @MessageMapping("help", root=true)
-     *
-     * @return string
-     */
-    public function help(string $data): string
-    {
-        return '(home.ar)Recv: ' . $data;
+        if ($data === 'ping') {
+            Session::mustGet()->push('pong');
+        }
     }
 }
