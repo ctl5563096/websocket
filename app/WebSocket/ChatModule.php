@@ -44,10 +44,12 @@ class ChatModule
     public function onOpen(Request $request): void
     {
         // 把fd存储到哈希里面
-        Redis::hSet('weChat_id','info' . $request->getFd(),$name = '游客'.time());
-        $name = '游客'.time();
+        Redis::hSet('weChat_id', 'info' . $request->getFd(), $name = '游客' . time());
+        $name = '游客' . time();
+        $len = (string)Redis::HLen('weChat_id');
         // 返回客户端fd给客户端,用于处理聊天室问题
-        server()->push($request->getFd(),"{$name}欢迎来到聊天室");
+        server()->push($request->getFd(), "{$name}欢迎进入聊天室,聊天室的小伙伴{$len}");
+        server()->broadcast("{$name}进入了聊天室,目前聊天室人数{$len}", [], [], $request->getFd());
     }
 
     /**
@@ -57,13 +59,13 @@ class ChatModule
      *
      * @OnMessage()
      */
-    public function onMessage(Server $server ,Frame $frame): void
+    public function onMessage(Server $server, Frame $frame): void
     {
         // 发送者的fd
         $fd = $frame->fd;
         // 发送者名称
-        $name = Redis::hGet('weChat_id','info' . $fd);
-        server()->sendToAll($name . ' : ' . $frame->data , $fd , 50);
+        $name = Redis::hGet('weChat_id', 'info' . $fd);
+        server()->sendToAll($name . ' : ' . $frame->data, $fd, 50);
     }
 
     /**
@@ -79,6 +81,6 @@ class ChatModule
         // 断开socket时删除某个哈希键 防止哈希键过多
         $hashKey = 'info' . $fd;
 
-        Redis::hDel('weChat_id',$hashKey);
+        Redis::hDel('weChat_id', $hashKey);
     }
 }
