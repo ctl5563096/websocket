@@ -48,7 +48,7 @@ class ChatModule
         $name = '游客' . time();
         $len = (string)Redis::HLen('weChat_id');
         // 返回客户端fd给客户端,用于处理聊天室问题
-        server()->push($request->getFd(), "{$name}欢迎进入聊天室,聊天室的小伙伴{$len}");
+        server()->push($request->getFd(), "{$name}欢迎进入聊天室,聊天室有{$len}位小伙伴哦~");
         server()->broadcast("{$name}进入了聊天室,目前聊天室人数{$len}", [], [], $request->getFd());
     }
 
