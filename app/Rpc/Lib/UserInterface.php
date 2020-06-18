@@ -18,13 +18,12 @@ namespace App\Rpc\Lib;
 interface UserInterface
 {
     /**
-     * @param int   $id
-     * @param mixed $type
-     * @param int   $count
      *
+     * @param array $param
      * @return array
      */
-    public function getList(int $id, $type, int $count = 10): array;
+    public function getList(array $param): array;
+
 
     /**
      * @param int $id

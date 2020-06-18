@@ -130,15 +130,16 @@ return [
     ],
     'rpcServer'          => [
         'class' => ServiceServer::class,
-        'listener' => [
-            'http' => bean('httpServer'),
-        ]
+        'port' => 18309,
+//        'listener' => [
+//            'http' => bean('httpServer'),
+//        ]
     ],
     'wsServer'           => [
         'class'    => WebSocketServer::class,
         'port'     => 18308,
         'listener' => [
-//            'rpc' => bean('rpcServer'),
+            'rpc' => bean('rpcServer'),
             // 'tcp' => bean('tcpServer'),
         ],
         'on'       => [
