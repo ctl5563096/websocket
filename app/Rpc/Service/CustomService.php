@@ -45,6 +45,6 @@ class CustomService implements CustomInterface
             'openId'  => $openId,
             'message' => $message,
         ];
-        return server()->push($fd , JsonHelper::encode($data));
+        return server()->push((int)$fd , JsonHelper::encode($data));
     }
 }
