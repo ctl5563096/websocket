@@ -34,6 +34,11 @@ class CustomService implements CustomInterface
     {
         // 获取客服的fd
         $fd   = Redis::hGet('customList', (string)$customId);
+
+        // 判断客服是否在线
+        if ($fd === false){
+            return false;
+        }
         // 发送数据体type用于判断发送的是图片地址还是文本
         $data = [
             'type'    => $type,
