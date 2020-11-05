@@ -63,11 +63,15 @@ class CustomModule
         $data = $request->getQueryParams();
         $hashKey = Session::mustGet()->get('customId');
         if($hashKey){
-            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用？");
+            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
         }else{
             Session::mustGet()->set('customId',(string)$data['custom_id']);
             // 把fd存储到哈希里面
-            Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
+            if(Redis::hGet('customList',(string)$data['custom_id'])){
+                server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
+            }else{
+                Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
+            }
         }
     }
 
