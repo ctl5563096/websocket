@@ -55,10 +55,9 @@ class CustomModule
      *
      * @OnOpen()
      * @param Request $request
-     * @param Response $response
-     * @return array
+     * @return void
      */
-    public function onOpen(Request $request, Response $response)
+    public function onOpen(Request $request)
     {
         // 获取前端提交过来的客服Id 以客服Id为哈希键 文件描述符fd为哈希值
         $data = $request->getQueryParams();
