@@ -61,9 +61,14 @@ class CustomModule
     {
         // 获取前端提交过来的客服Id 以客服Id为哈希键 文件描述符fd为哈希值
         $data = $request->getQueryParams();
-        Session::mustGet()->set('customId',(string)$data['custom_id']);
-        // 把fd存储到哈希里面
-        Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
+        $hashKey = Session::mustGet()->get('customId');
+        if($hashKey){
+            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用？");
+        }else{
+            Session::mustGet()->set('customId',(string)$data['custom_id']);
+            // 把fd存储到哈希里面
+            Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
+        }
     }
 
     /**
