@@ -5,6 +5,7 @@ namespace App\WebSocket;
 
 use Swoft\Http\Message\Request;
 use Swoft\Http\Message\Response;
+use Swoft\Log\Helper\Log;
 use Swoft\Redis\Redis;
 use Swoft\Session\Session;
 use Swoft\WebSocket\Server\Annotation\Mapping\OnClose;
@@ -42,12 +43,22 @@ class CustomModule
     {
         $data = $request->getQueryParams();
 
-        //检测是否携带客服id
-        if (isset($data['custom_id'])){
-            return [true ,$response];
+        // 检测是否携带客服id
+        if (!isset($data['custom_id'])){
+            return [false ,$response];
         }
-
-        return [false ,$response];
+        Log::info('this %s log', 'info');
+        // 检测是已经被登录过了
+        $hashKey = Session::mustGet()->get('customId');
+        if ($hashKey){
+            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
+            return [false ,$response];
+        }
+        if(Redis::hGet('customList',(string)$data['custom_id'])){
+            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用@_@!或者联系管理员进行在线查看");
+            return [false ,$response];
+        }
+        return [true ,$response];
     }
 
     /**
@@ -61,18 +72,10 @@ class CustomModule
     {
         // 获取前端提交过来的客服Id 以客服Id为哈希键 文件描述符fd为哈希值
         $data = $request->getQueryParams();
-        $hashKey = Session::mustGet()->get('customId');
-        if($hashKey){
-            server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
-        }else{
-            Session::mustGet()->set('customId',(string)$data['custom_id']);
-            // 把fd存储到哈希里面
-            if(Redis::hGet('customList',(string)$data['custom_id'])){
-                server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用@_@!");
-            }else{
-                Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
-            }
-        }
+        // 客服id存储到session里面方便查找文件描述符
+        Session::mustGet()->set('customId',(string)$data['custom_id']);
+        // 把fd存储到哈希里面
+        Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
     }
 
     /**
@@ -88,6 +91,5 @@ class CustomModule
         // 断开websocket时删除客服信息
         $hashKey = Session::mustGet()->get('customId');
         Redis::hDel('customList', $hashKey);
-        server()->push($fd, "欢迎下次登录!");
     }
 }
