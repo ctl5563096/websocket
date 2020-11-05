@@ -55,20 +55,23 @@ class CustomModule
      *
      * @OnOpen()
      * @param Request $request
-     * @return void
+     * @param Response $response
+     * @return array
      */
-    public function onOpen(Request $request): void
+    public function onOpen(Request $request, Response $response)
     {
         // 获取前端提交过来的客服Id 以客服Id为哈希键 文件描述符fd为哈希值
         $data = $request->getQueryParams();
         $hashKey = Session::mustGet()->get('customId');
         if($hashKey){
             server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
+            return [false ,$response];
         }else{
             Session::mustGet()->set('customId',(string)$data['custom_id']);
             // 把fd存储到哈希里面
             if(Redis::hGet('customList',(string)$data['custom_id'])){
-                server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
+                server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用@_@!");
+                return [false ,$response];
             }else{
                 Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
             }
