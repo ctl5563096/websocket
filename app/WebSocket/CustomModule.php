@@ -47,7 +47,6 @@ class CustomModule
         if (!isset($data['custom_id'])){
             return [false ,$response];
         }
-        Log::info('this %s log', 'info');
         // 检测是已经被登录过了
         $hashKey = Session::mustGet()->get('customId');
         if ($hashKey){
