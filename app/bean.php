@@ -12,7 +12,6 @@ use Swoft\Db\Database;
 use Swoft\Db\Pool;
 use Swoft\Http\Server\HttpServer;
 use Swoft\Http\Server\Swoole\RequestListener;
-use Swoft\Log\Handler\FileHandler;
 use Swoft\Redis\RedisDb;
 use Swoft\Rpc\Client\Client as ServiceClient;
 use Swoft\Rpc\Client\Pool as ServicePool;
@@ -21,6 +20,7 @@ use Swoft\Server\SwooleEvent;
 use Swoft\Task\Swoole\FinishListener;
 use Swoft\Task\Swoole\TaskListener;
 use Swoft\WebSocket\Server\WebSocketServer;
+use Swoft\Log\Handler\FileHandler;
 
 return [
     'lineFormatter'      => [
@@ -41,7 +41,7 @@ return [
     ],
     'logger'             => [
         'flushRequest' => false,
-        'enable'       => false,
+        'enable'       => true,
         'json'         => false,
         'handlers'     => [
             'application' => \bean('applicationHandler'),
@@ -122,6 +122,7 @@ return [
         'class'    => RedisDb::class,
         'host'     => '127.0.0.1',
         'port'     => 6379,
+        'password' => 'A5563096z',
         'database' => 1,
         'option'   => [
             'prefix' => 'swoft:'
