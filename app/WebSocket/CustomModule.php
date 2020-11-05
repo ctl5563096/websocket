@@ -65,13 +65,11 @@ class CustomModule
         $hashKey = Session::mustGet()->get('customId');
         if($hashKey){
             server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用!");
-            return [false ,$response];
         }else{
             Session::mustGet()->set('customId',(string)$data['custom_id']);
             // 把fd存储到哈希里面
             if(Redis::hGet('customList',(string)$data['custom_id'])){
                 server()->push($request->getFd(), "该客服已经被登录,请确认账号密码是否被盗用@_@!");
-                return [false ,$response];
             }else{
                 Redis::hSet('customList', (string)$data['custom_id'] , (string)$request->getFd());
             }
@@ -91,5 +89,6 @@ class CustomModule
         // 断开websocket时删除客服信息
         $hashKey = Session::mustGet()->get('customId');
         Redis::hDel('customList', $hashKey);
+        server()->push($fd, "欢迎下次登录!");
     }
 }
