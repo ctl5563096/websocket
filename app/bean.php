@@ -12,6 +12,7 @@ use Swoft\Db\Database;
 use Swoft\Db\Pool;
 use Swoft\Http\Server\HttpServer;
 use Swoft\Http\Server\Swoole\RequestListener;
+use Swoft\Log\Handler\FileHandler;
 use Swoft\Redis\RedisDb;
 use Swoft\Rpc\Client\Client as ServiceClient;
 use Swoft\Rpc\Client\Pool as ServicePool;
@@ -22,16 +23,30 @@ use Swoft\Task\Swoole\TaskListener;
 use Swoft\WebSocket\Server\WebSocketServer;
 
 return [
+    'lineFormatter'      => [
+        'format'     => '%datetime% [%level_name%] [%channel%] [%event%] [tid:%tid%] [cid:%cid%] [traceid:%traceid%] [spanid:%spanid%] [parentid:%parentid%] %messages%',
+        'dateFormat' => 'Y-m-d H:i:s',
+    ],
     'noticeHandler'      => [
+        'class'     => FileHandler::class,
         'logFile' => '@runtime/logs/notice-%d{Y-m-d-H}.log',
+        'formatter' => \bean('lineFormatter'),
+        'levels'    => 'notice,info,debug,trace',
     ],
     'applicationHandler' => [
-        'logFile' => '@runtime/logs/error-%d{Y-m-d}.log',
+        'class'     => FileHandler::class,
+        'logFile'   => '@runtime/logs/error.log',
+        'formatter' => \bean('lineFormatter'),
+        'levels'    => 'error,warning',
     ],
     'logger'             => [
         'flushRequest' => false,
         'enable'       => false,
         'json'         => false,
+        'handlers'     => [
+            'application' => \bean('applicationHandler'),
+            'notice'      => \bean('noticeHandler'),
+        ],
     ],
     'httpServer'         => [
         'class'    => HttpServer::class,
