@@ -13,6 +13,7 @@ use Swoft\WebSocket\Server\Annotation\Mapping\OnHandshake;
 use Swoft\WebSocket\Server\Annotation\Mapping\OnOpen;
 use Swoft\WebSocket\Server\Annotation\Mapping\WsModule;
 use Swoole\WebSocket\Server;
+use Swoft\WebSocket\Server\MessageParser\JsonParser;
 
 /**
  * Class CustomModule
