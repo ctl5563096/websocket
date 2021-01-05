@@ -30,21 +30,22 @@ class CustomService implements CustomInterface
      * @return bool
      * @author chentulin
      */
-    public function send(int $customId ,string $type, string $message, string $openId): bool
+    public function send(int $customId, string $type, string $message, string $openId): bool
     {
         // 获取客服的fd
-        $fd   = Redis::hGet('customList', (string)$customId);
+        $fd = Redis::hGet('customList', (string)$customId);
 
         // 判断客服是否在线
-        if ($fd === false){
+        if ($fd === false) {
             return false;
         }
         // 发送数据体type用于判断发送的是图片地址还是文本
         $data = [
-            'type'    => $type,
-            'openId'  => $openId,
-            'message' => $message,
+            'type'      => $type,
+            'openId'    => $openId,
+            'message'   => $message,
+            'send_time' => date('Y-m-d H:i:s'),
         ];
-        return server()->push((int)$fd , JsonHelper::encode($data));
+        return server()->push((int)$fd, JsonHelper::encode($data));
     }
 }
